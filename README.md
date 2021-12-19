@@ -25,8 +25,8 @@ options:
                         X Position of the overlay releative to the input file (range 0 - 1)
   -py [], --positiony []
                         Y Position of the overlay releative to the input file (range 0 - 1)
-  -sx [], --scalex []   Set the scale of the overlay. Range (0 - 1)
-  -sy [], --scaley []   Set the scale of the overlay. Range (0 - 1)
+  -sx [], --scalex []   Set the scale of the overlay
+  -sy [], --scaley []   Set the scale of the overlay
   ```
 ### Examples
 ---
