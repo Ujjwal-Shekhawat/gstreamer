@@ -9,7 +9,7 @@ gi.require_version("Gst", "1.0")
 
 from gi.repository import Gst, GLib
 
-# Adds all elements ti the pipeline
+# Adds all elements to the pipeline
 def addall_to_pipeline(*args):
     for x in range(len(args) - 1):
         args[0].add(args[x+1])
@@ -188,7 +188,11 @@ def image_input(format = 0):
     filesink = Gst.ElementFactory.make("filesink", "imgsink")
 
     ele_prop_set(source, [("location", Args.inputfile)])
-    ele_prop_set(filesink, [("location", "image.jpg")])
+
+    if (format == 1):
+        ele_prop_set(filesink, [("location", "image.jpg")])
+    else:
+        ele_prop_set(filesink, [("location", "image.png")])
     ele_prop_set(overlay, [("location", Args.overlay), ("overlay-width", Args.scalex), ("overlay-height", Args.scaley), ("relative-x", Args.positionx), ("relative-y", Args.positiony)])
 
     addall_to_pipeline(pipeline, source, jpegdec, pngdec, overlay, jpegenc, pngenc, filesink)
