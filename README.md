@@ -41,5 +41,17 @@ Another example which takes two image format imputs and overlays one on top of t
 python3 main.py -f /path/to/image -o /path/to/overlayimage -sx 0.5 -sy 0.5
 ```
 The above command takes two image format inputs and overlays one on top of the other.
-```-sx 0.5``` sets the x-position of the overlay to the center position releative to the imput image width
-```-sy 0.5``` sets the y-position of the overlay to the center position releative to the input image height
+<br>
+```-sx 0.5``` sets the x-position of the overlay to the center position releative to the imput image width.
+<br>
+```-sy 0.5``` sets the y-position of the overlay to the center position releative to the input image height.
+### Sample output
+---
+#### Image example
+command: ```python3 main.py -f 1.jpg -o 1.png```
+Image 1 | Image 2
+:-:|:-:
+|<img src="1.jpg" alt="alt text" width="50%"/>|<img src="2.png" alt="alt text" width="50%"/>|
+
+__Output Image__
+<img src="image.jpg" alt="alt text" width="100%"/>
