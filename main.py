@@ -38,8 +38,8 @@ parser.add_argument('-fl', '--filter', nargs='?', type=str, metavar='', required
 parser.add_argument('-r', '--rotation', nargs='?', type=float, metavar='', required=False, const=0.0, default=0.0, help="Rotatioon of the file. Range (0 - 1) is in Radians")
 parser.add_argument('-px', '--positionx', nargs='?', type=float, metavar='', required=False, const=0.0, default=0.0, help="X Position of the overlay releative to the input file (range 0 - 1)")
 parser.add_argument('-py', '--positiony', nargs='?', type=float, metavar='', required=False, const=0.0, default=0.0, help="Y Position of the overlay releative to the input file (range 0 - 1)")
-parser.add_argument('-sx', '--scalex', nargs='?', type=float, metavar='', required=False, const=1, default=200, help="Set the scale of the overlay. Range (0 - 1)")
-parser.add_argument('-sy', '--scaley', nargs='?', type=float, metavar='', required=False, const=1, default=200, help="Set the scale of the overlay. Range (0 - 1)")
+parser.add_argument('-sx', '--scalex', nargs='?', type=int, metavar='', required=False, const=1, default=200, help="Set the scale of the overlay")
+parser.add_argument('-sy', '--scaley', nargs='?', type=int, metavar='', required=False, const=1, default=200, help="Set the scale of the overlay")
 
 Args = parser.parse_args()
 
@@ -227,11 +227,37 @@ def image_input(format = 0):
     main_loop.quit()
     thread.join()
 
+def mp4mov():
+    pipeline = Gst.parse_launch("filesrc location="+ Args.inputfile +" ! qtdemux name=demux qtmux name=mux ! filesink location=video.mp4  demux.audio_0 ! queue ! decodebin ! audioconvert ! avenc_aac ! mux.   demux.video_0 ! queue ! decodebin ! videoconvert ! "+ Args.filter +"! videoconvert ! gdkpixbufoverlay location="+ Args.overlay +" relative-x={} relative-y={} overlay-width={} overlay-height={} ! rotate angle={} ! mux.".format(Args.positionx, Args.positiony, Args.scalex, Args.scaley, Args.rotation))
+    pipeline.set_state(Gst.State.PLAYING)
+
+    terminate = False
+    bus = pipeline.get_bus()
+    while True:
+        try:
+            msg = bus.timed_pop_filtered(
+                0.5 * Gst.SECOND,
+                Gst.MessageType.ERROR | Gst.MessageType.EOS)
+            if msg:
+                terminate = True
+                print("Processed Terminating...")
+        except KeyboardInterrupt:
+            terminate = True
+        if terminate:
+            break
+    pipeline.set_state(Gst.State.NULL)
+    main_loop.quit()
+    thread.join()
+
 def main():
     fext = pathlib.Path(Args.inputfile).suffix
-    if(fext.find("ogg") == True):
+    if(fext.find("ogg") == True or fext.find("mp4") == True or fext.find("mov") == True):
         print("Video input", Args.inputfile)
-        video_input()
+        if(fext.find("mp4") == True or fext.find("mov") == True):
+            print("Setting up pipeline")
+            mp4mov()
+        else:
+            video_input()
     elif(fext.find("jpg") == True or fext.find("png") == True):
         print("Image input", Args.inputfile)
         if(fext.find("jpg") == True):
@@ -241,7 +267,7 @@ def main():
             print("PNG")
             image_input()
     else:
-        print("Try providing ogg or jpg")
+        print("Try providing ogg, mov, mp4 or jpg, png")
         print(Args.inputfile)
         main_loop.quit()
         thread.join()
