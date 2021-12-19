@@ -34,8 +34,8 @@ parser.add_argument('-fl', '--filter', nargs='?', type=str, metavar='', required
 parser.add_argument('-r', '--rotation', nargs='?', type=float, metavar='', required=False, const=0.0, default=0.0, help="Rotatioon of the file. Range (0 - 1) is in Radians")
 parser.add_argument('-px', '--positionx', nargs='?', type=float, metavar='', required=False, const=0.0, default=0.0, help="X Position of the overlay releative to the input file (range 0 - 1)")
 parser.add_argument('-py', '--positiony', nargs='?', type=float, metavar='', required=False, const=0.0, default=0.0, help="Y Position of the overlay releative to the input file (range 0 - 1)")
-parser.add_argument('-sx', '--scalex', nargs='?', type=float, metavar='', required=False, const=1, default=200, help="Set the scale of the overlay. Range (0 - 1) releative to the inputfile")
-parser.add_argument('-sy', '--scaley', nargs='?', type=float, metavar='', required=False, const=1, default=200, help="Set the scale of the overlay. Range (0 - 1) releative to the inputfile")
+parser.add_argument('-sx', '--scalex', nargs='?', type=float, metavar='', required=False, const=1, default=200, help="Set the scale of the overlay. Range (0 - 1)")
+parser.add_argument('-sy', '--scaley', nargs='?', type=float, metavar='', required=False, const=1, default=200, help="Set the scale of the overlay. Range (0 - 1)")
 
 Args = parser.parse_args()
 
