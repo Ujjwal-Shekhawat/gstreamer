@@ -9,14 +9,17 @@ gi.require_version("Gst", "1.0")
 
 from gi.repository import Gst, GLib
 
+# Adds all elements ti the pipeline
 def addall_to_pipeline(*args):
     for x in range(len(args) - 1):
         args[0].add(args[x+1])
 
+# Links all the given elements in order
 def linkall_elements(*args):
     for x in range(len(args) - 1):
         args[x].link(args[x+1])
 
+# Sets the given element props
 def ele_prop_set(element, props):
     for x in range(len(props)):
         element.set_property(props[x][0], props[x][1])
@@ -27,6 +30,7 @@ main_loop = GLib.MainLoop()
 thread = Thread(target=main_loop.run)
 thread.start()
 
+# Argparse setup
 parser = argparse.ArgumentParser(description = "Gstreamer pipeline")
 parser.add_argument('-f', '--inputfile', type=str, metavar='', required=True, help="Input file path")
 parser.add_argument('-o', '--overlay', type=str, metavar='', required=True, help="Overlay file path")
@@ -75,13 +79,6 @@ def video_input():
     mp4mux = Gst.ElementFactory.make("mp4mux", "mp4mux")
     filesink = Gst.ElementFactory.make("filesink", "fsink")
 
-    # When imput file is Image
-    imgsrc = Gst.ElementFactory.make("filesrc", "image-source")
-
-    # Temp Sinks
-    audiosink = Gst.ElementFactory.make("autoaudiosink", "asink")
-    videosink = Gst.ElementFactory.make("autovideosink", "vsink")
-
     # Adding all elements to pipeline
     addall_to_pipeline(pipeline, source, demuxer, videoconvert1, videoconvert2, videoconvert3, svgoverlay, overlay, effects, rotate, x264enc, que, avenc_aac, mp4mux, filesink)
 
@@ -92,7 +89,7 @@ def video_input():
     ele_prop_set(source, source_props)
 
     filesink_props = [
-        ("location", "gst_fast.mp4")
+        ("location", "video.mp4")
     ]
     ele_prop_set(filesink, filesink_props)
 
@@ -118,7 +115,6 @@ def video_input():
     ]
     ele_prop_set(rotate, rotate_props)
 
-    # Some tweaks for faster procesing
     avenc_aac_props = [
         ("bitrate", 64000)
     ]
@@ -134,7 +130,7 @@ def video_input():
     # Linking AudioLine
     linkall_elements(que, avenc_aac)
 
-    # Linking muxer to filesink
+    # Linking multiplexer to filesink
     linkall_elements(mp4mux, filesink)
 
     # Mux Video pad link
@@ -155,6 +151,7 @@ def video_input():
         print("ERROR: Audioresample src cant be linked with mp4mux audio sink")
         sys.exit(1)
 
+    # Finally set the pipeline to the playing state and check for any errors
     ret = pipeline.set_state(Gst.State.PLAYING)
     if ret == Gst.StateChangeReturn.FAILURE:
         print("Unable to set the pipeline to the playing state.")
@@ -181,7 +178,7 @@ def video_input():
 def image_input(format = 0):
     pipeline = Gst.Pipeline.new("main-pipeline")
 
-    # When input file is Video
+    # When input file is Image
     source = Gst.ElementFactory.make("filesrc", "file-source")
     pngdec = Gst.ElementFactory.make("pngdec", "dec")
     jpegdec = Gst.ElementFactory.make("jpegdec", "dec1")
@@ -191,7 +188,7 @@ def image_input(format = 0):
     filesink = Gst.ElementFactory.make("filesink", "imgsink")
 
     ele_prop_set(source, [("location", Args.inputfile)])
-    ele_prop_set(filesink, [("location", "new.jpg")])
+    ele_prop_set(filesink, [("location", "image.jpg")])
     ele_prop_set(overlay, [("location", Args.overlay), ("overlay-width", Args.scalex), ("overlay-height", Args.scaley), ("relative-x", Args.positionx), ("relative-y", Args.positiony)])
 
     addall_to_pipeline(pipeline, source, jpegdec, pngdec, overlay, jpegenc, pngenc, filesink)
