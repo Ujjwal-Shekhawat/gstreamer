@@ -5,7 +5,7 @@ How to run:
 ```
 git clone https://github.com/Ujjwal-Shekhawat/gstreamer
 cd gstreamer
-python3 main.py -h
+python3 main.py --help
 ```
 ### CLI
 ---
@@ -34,9 +34,9 @@ An example to overlay an image on top of a video and apply a filter on the video
 ```
 python3 main.py -f /path/to/vid.ogg -o /path/to/overlay.jpg -fl frei0r-filter-emboss
 ```
-The above command takes an ogg __video format__ inputfile and an __image format__ overlay file. It overlays the image on the video and applies the frei0r-filter-emboss filter and then it writes the output as an __video.mp4__.
+The above command takes an ogg __video format__ input file and an __image format__ overlay file. It overlays the image on the video and applies the __frei0r-filter-emboss__ filter and then it writes the output as an __video.mp4__.
 
-Another example which takes two image format imputs and overlays one on top of the other
+Another example which takes two image format imputs and overlays one on top of the other and writes the output on __image.{jpg,png}__
 ```
 python3 main.py -f /path/to/image -o /path/to/overlayimage -sx 0.5 -sy 0.5
 ```
