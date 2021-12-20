@@ -28,6 +28,27 @@ options:
   -sx [], --scalex []   Set the scale of the overlay
   -sy [], --scaley []   Set the scale of the overlay
   ```
+### Dependencies
+---
+##### <u>To install Install GStreamer on Debian/Ubuntu</u>
+```
+sudo apt-get install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-doc gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
+```
+
+##### <u>To install GStreamer on Fedora</u>
+```
+sudo dnf install gstreamer1-devel gstreamer1-plugins-base-tools gstreamer1-doc gstreamer1-plugins-base-devel gstreamer1-plugins-good gstreamer1-plugins-good-extras gstreamer1-plugins-ugly gstreamer1-plugins-bad-free gstreamer1-plugins-bad-free-devel gstreamer1-plugins-bad-free-extras
+```
+
+##### <u>For ArchLinux and Manjaro</u>
+```
+sudo pacman -S gstreamer gst-plugins-{base,good,bad,ugly} python python-gobject
+```
+
+##### <u>For windows </u>
+Follow the  [official docs](https://docs.rocos.io/prod/docs/gstreamer-on-windows)
+But i woud recommend following this [docs.rocos.io/prod/docs/gstreamer-on-windows](https://docs.rocos.io/prod/docs/gstreamer-on-windows)
+
 ### Examples
 ---
 An example to overlay an image on top of a video and apply a filter on the video
@@ -41,9 +62,9 @@ Another example which takes two image format imputs and overlays one on top of t
 python3 main.py -f /path/to/image -o /path/to/overlayimage -sx 0.5 -sy 0.5
 ```
 The above command takes two image format inputs and overlays one on top of the other.
-<br>
+
 ```-sx 0.5``` sets the x-position of the overlay to the center position releative to the imput image width.
-<br>
+
 ```-sy 0.5``` sets the y-position of the overlay to the center position releative to the input image height.
 ### Sample output
 ---
