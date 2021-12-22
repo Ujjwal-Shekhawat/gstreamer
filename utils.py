@@ -23,8 +23,8 @@ def ele_prop_set(element, props):
 
 # Enum class for fileformats
 class file_format(enum.Enum):
-    mp4 = ".mp4"
-    mov = ".mov"
-    ogg = ".ogg"
-    jpg = ".jpg"
-    png = ".png"
+    MP4 = ".mp4"
+    MOV = ".mov"
+    OGG = ".ogg"
+    JPG = ".jpg"
+    PNG = ".png"
