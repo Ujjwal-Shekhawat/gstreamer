@@ -74,7 +74,7 @@ The above command takes two image format inputs and overlays one on top of the o
 command: ```python3 main.py -f 1.jpg -o 1.png```
 Image 1 | Image 2
 :-:|:-:
-|<img src="1.jpg" alt="alt text" width="50%"/>|<img src="2.png" alt="alt text" width="50%"/>|
+|<img src="media_files/1.jpg" alt="alt text" width="50%"/>|<img src="media_files/2.png" alt="alt text" width="50%"/>|
 
 __Output Image__
-<img src="image.jpg" alt="alt text" width="100%"/>
+<img src="media_files/image.jpg" alt="alt text" width="100%"/>
