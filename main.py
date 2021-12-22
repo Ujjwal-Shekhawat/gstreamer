@@ -1,7 +1,8 @@
+from os import link
 from threading import Thread
 from time import sleep
 import gi
-import argparse
+from utils import *
 import pathlib
 import sys
 
@@ -9,39 +10,28 @@ gi.require_version("Gst", "1.0")
 
 from gi.repository import Gst, GLib
 
-# Adds all elements to the pipeline
-def addall_to_pipeline(*args):
+# Add all elements
+def add_many(*args):
     for x in range(len(args) - 1):
-        args[0].add(args[x+1])
+        args[0].add(args[x + 1])
 
-# Links all the given elements in order
-def linkall_elements(*args):
+# Link elements
+def link_many(*args):
     for x in range(len(args) - 1):
-        args[x].link(args[x+1])
+        args[x].link(args[x + 1])
 
 # Sets the given element props
 def ele_prop_set(element, props):
     for x in range(len(props)):
         element.set_property(props[x][0], props[x][1])
 
+Args = cli_setup()
+
 Gst.init()
 
 main_loop = GLib.MainLoop()
 thread = Thread(target=main_loop.run)
 thread.start()
-
-# Argparse setup
-parser = argparse.ArgumentParser(description = "Gstreamer pipeline")
-parser.add_argument('-f', '--inputfile', type=str, metavar='', required=True, help="Input file path")
-parser.add_argument('-o', '--overlay', type=str, metavar='', required=True, help="Overlay file path")
-parser.add_argument('-fl', '--filter', nargs='?', type=str, metavar='', required=False, const="vertigotv", default="vertigotv", help="Filter to apply")
-parser.add_argument('-r', '--rotation', nargs='?', type=float, metavar='', required=False, const=0.0, default=0.0, help="Rotatioon of the file. Range (0 - 1) is in Radians")
-parser.add_argument('-px', '--positionx', nargs='?', type=float, metavar='', required=False, const=0.0, default=0.0, help="X Position of the overlay releative to the input file (range 0 - 1)")
-parser.add_argument('-py', '--positiony', nargs='?', type=float, metavar='', required=False, const=0.0, default=0.0, help="Y Position of the overlay releative to the input file (range 0 - 1)")
-parser.add_argument('-sx', '--scalex', nargs='?', type=int, metavar='', required=False, const=1, default=200, help="Set the scale of the overlay")
-parser.add_argument('-sy', '--scaley', nargs='?', type=int, metavar='', required=False, const=1, default=200, help="Set the scale of the overlay")
-
-Args = parser.parse_args()
 
 # main code
 def video_input():
@@ -80,7 +70,7 @@ def video_input():
     filesink = Gst.ElementFactory.make("filesink", "fsink")
 
     # Adding all elements to pipeline
-    addall_to_pipeline(pipeline, source, demuxer, videoconvert1, videoconvert2, videoconvert3, svgoverlay, overlay, effects, rotate, x264enc, que, avenc_aac, mp4mux, filesink)
+    add_many(pipeline, source, demuxer, videoconvert1, videoconvert2, videoconvert3, svgoverlay, overlay, effects, rotate, x264enc, que, avenc_aac, mp4mux, filesink)
 
     # Settings up element properties
     source_props = [
@@ -121,17 +111,17 @@ def video_input():
     ele_prop_set(avenc_aac, avenc_aac_props)
 
     # Linking source to demuxer and setting demuxer pad-added callbacks
-    linkall_elements(source, demuxer)
+    link_many(source, demuxer)
     demuxer.connect("pad-added", demuxer_callback)
 
     # Linking VideoLine
-    linkall_elements(videoconvert1, effects, overlay, rotate, videoconvert2, svgoverlay, videoconvert3, x264enc)
+    link_many(videoconvert1, effects, overlay, rotate, videoconvert2, svgoverlay, videoconvert3, x264enc)
 
     # Linking AudioLine
-    linkall_elements(que, avenc_aac)
+    link_many(que, avenc_aac)
 
     # Linking multiplexer to filesink
-    linkall_elements(mp4mux, filesink)
+    link_many(mp4mux, filesink)
 
     # Mux Video pad link
     mp4mux_video_template = mp4mux.get_pad_template("video_%u")
@@ -175,7 +165,7 @@ def video_input():
     main_loop.quit()
     thread.join()
 
-def image_input(format = 0):
+def image_input(fformat):
     pipeline = Gst.Pipeline.new("main-pipeline")
 
     # When input file is Image
@@ -189,20 +179,23 @@ def image_input(format = 0):
 
     ele_prop_set(source, [("location", Args.inputfile)])
 
-    if (format == 1):
-        ele_prop_set(filesink, [("location", "image.jpg")])
-    else:
-        ele_prop_set(filesink, [("location", "image.png")])
+    match fformat:
+        case file_format.jpg:
+            ele_prop_set(filesink, [("location", "image.jpg")])
+        case _:
+            ele_prop_set(filesink, [("location", "image.png")])
+    
     ele_prop_set(overlay, [("location", Args.overlay), ("overlay-width", Args.scalex), ("overlay-height", Args.scaley), ("relative-x", Args.positionx), ("relative-y", Args.positiony)])
 
-    addall_to_pipeline(pipeline, source, jpegdec, pngdec, overlay, jpegenc, pngenc, filesink)
+    add_many(pipeline, source, jpegdec, pngdec, overlay, jpegenc, pngenc, filesink)
 
-    if(format == 1):
-        print("Working with JPEG")
-        linkall_elements(source, jpegdec, overlay, jpegenc, filesink)
-    else:
-        print("Working with PNG")
-        linkall_elements(source, pngdec, overlay, pngenc, filesink)
+    match fformat:
+        case file_format.jpg:
+            print("Working with JPEG")
+            link_many(source, jpegdec, overlay, jpegenc, filesink)
+        case _:
+            print("Working with PNG")
+            link_many(source, pngdec, overlay, pngenc, filesink)
 
     ret = pipeline.set_state(Gst.State.PLAYING)
     if ret == Gst.StateChangeReturn.FAILURE:
@@ -251,27 +244,23 @@ def mp4mov():
 
 def main():
     fext = pathlib.Path(Args.inputfile).suffix
-    if(fext.find("ogg") == True or fext.find("mp4") == True or fext.find("mov") == True):
-        print("Video input", Args.inputfile)
-        if(fext.find("mp4") == True or fext.find("mov") == True):
-            print("Setting up pipeline")
+    match fext:
+        case file_format.mp4.value:
             mp4mov()
-        else:
+        case file_format.mov.value:
+            mp4mov()
+        case file_format.ogg.value:
             video_input()
-    elif(fext.find("jpg") == True or fext.find("png") == True):
-        print("Image input", Args.inputfile)
-        if(fext.find("jpg") == True):
-            print("JPEG")
-            image_input(1)
-        else:
-            print("PNG")
-            image_input()
-    else:
-        print("Try providing ogg, mov, mp4 or jpg, png")
-        print(Args.inputfile)
-        main_loop.quit()
-        thread.join()
-        sys.exit(1)
+        case file_format.jpg.value:
+            image_input(file_format.jpg)
+        case file_format.png.value:
+            image_input(file_format.png)
+        case _:
+            print("Try providing ogg, mov, mp4 or jpg, png")
+            print(Args.inputfile)
+            main_loop.quit()
+            thread.join()
+            sys.exit(1)
 
 if __name__ == "__main__":
     main()
