@@ -1,3 +1,4 @@
+import sys
 from threading import Thread
 import gi
 import pipeline
@@ -24,17 +25,24 @@ def video_input(file_extension):
         case file_format.MP4.value | file_format.MOV.value:
             vid_pipeline = Mp4MovPipeLine()
             vid_pipeline.compose(Args.inputfile, Args.filter, Args.overlay, Args.positionx ,Args.positiony, Args.scalex, Args.scaley, Args.rotation)
-            vid_pipeline.run()
+            if vid_pipeline.run() != Mp4MovPipeLine.err.NO_ERROR:
+                main_loop.quit()
+                thread.join()
+                sys.exit(0)
 
         case file_format.OGG.value:
             vid_pipeline = VideoPipeline()
             vid_pipeline.compose(Args.filter, Args.inputfile, Args.overlay, Args.positionx, Args.positiony, Args.scalex, Args.scaley, Args.rotation)
-            vid_pipeline.run()
+            if vid_pipeline.run() != VideoPipeline.err.NO_ERROR:
+                main_loop.quit()
+                thread.join()
+                sys.exit(0)
 
 def image_input(file_extension):
     img_pipeline = ImagePipeline()
     img_pipeline.compose(file_extension, Args.inputfile, Args.overlay, Args.scalex, Args.scaley, Args.positionx, Args.positiony)
-    img_pipeline.run()
+    if img_pipeline.run() != ImagePipeline.err.NO_ERROR:
+        sys.exit(0)
 
 def main():
     file_extension = pathlib.Path(Args.inputfile).suffix
