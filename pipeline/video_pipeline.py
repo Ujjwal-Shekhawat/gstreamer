@@ -1,3 +1,4 @@
+import enum
 from pipeline import Pipeline
 
 import sys
@@ -8,6 +9,12 @@ gi.require_version("Gst", "1.0")
 from gi.repository import Gst
 
 class Mp4MovPipeLine():
+    class Errors(enum.Enum):
+        UNKNOWN_ERROR = "UNKNOWN_ERROR"
+        NO_ERROR = "NO_ERROR"
+
+    err = Errors
+
     def __init__(self):
         self._pipeline = None
         self._terminate = False
@@ -24,17 +31,33 @@ class Mp4MovPipeLine():
                 msg = bus.timed_pop_filtered(
                     0.5 * Gst.SECOND,
                     Gst.MessageType.ERROR | Gst.MessageType.EOS)
+
                 if msg:
-                    self._terminate = True
-                    print("Processed Terminating...")
+                    if msg.type == Gst.MessageType.EOS:
+                        self._terminate = True
+                        print("Processed Terminating...")
+
+                    elif msg.type == Gst.MessageType.ERROR:
+                        print("Unexpected error occured")
+                        self._pipeline.set_state(Gst.State.NULL)
+                        return self.err.UNKNOWN_ERROR
+
             except KeyboardInterrupt:
                 self._terminate = True
             if self._terminate:
                 break
         self._pipeline.set_state(Gst.State.NULL)
+        return self.err.NO_ERROR
 
 # Class to handle OGG format video files
 class VideoPipeline(Pipeline):
+    class Errors(enum.Enum):
+        PLAY_ERROR = "PLAY_ERROR"
+        UNKNOWN_ERROR = "UNKNOWN_ERROR"
+        NO_ERROR = "NO_ERROR"
+
+    err = Errors
+
     def __init__(self):
         super().__init__()
         self.source = Gst.ElementFactory.make("filesrc", "file-source")
@@ -131,7 +154,7 @@ class VideoPipeline(Pipeline):
         ret = self._pipeline.set_state(Gst.State.PLAYING)
         if ret == Gst.StateChangeReturn.FAILURE:
             print("Unable to set the pipeline to the playing state.")
-            sys.exit(1)
+            return self.err.PLAY_ERROR
 
         terminate = False
         bus = self._pipeline.get_bus()
@@ -140,11 +163,19 @@ class VideoPipeline(Pipeline):
                 msg = bus.timed_pop_filtered(
                     0.5 * Gst.SECOND,
                     Gst.MessageType.ERROR | Gst.MessageType.EOS)
+
                 if msg:
-                    terminate = True
-                    print("Processed Terminating...")
+                    if msg.type == Gst.MessageType.EOS:
+                        terminate = True
+                        print("Processed Terminating...")
+
+                    elif msg.type == Gst.MessageType.ERROR:
+                        print("Unknown error occured")
+                        return self.err.UNKNOWN_ERROR
+
             except KeyboardInterrupt:
                 terminate = True
             if terminate:
                 break
         self._pipeline.set_state(Gst.State.NULL)
+        return self.err.NO_ERROR
