@@ -16,15 +16,10 @@ def cli_setup():
     Args = parser.parse_args()
     return Args
 
-# Sets the given element props
-def ele_prop_set(element, props):
-    for x in range(len(props)):
-        element.set_property(props[x][0], props[x][1])
-
 # Enum class for fileformats
 class file_format(enum.Enum):
-    mp4 = ".mp4"
-    mov = ".mov"
-    ogg = ".ogg"
-    jpg = ".jpg"
-    png = ".png"
+    MP4 = ".mp4"
+    MOV = ".mov"
+    OGG = ".ogg"
+    JPG = ".jpg"
+    PNG = ".png"
